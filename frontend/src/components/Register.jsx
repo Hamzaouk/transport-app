@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Add useNavigate and Link imports
 
 const Register = () => {
-  const navigate = useNavigate(); // Add navigate hook
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -99,42 +97,18 @@ const Register = () => {
     setLoading(true);
     setMessage('');
 
-    // Configuration avec timeout et meilleure gestion d'erreurs
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
-
     try {
-      // Retirer confirmPassword et préparer les données à envoyer
       const { confirmPassword, ...dataToSend } = formData;
-      
-      console.log('Données envoyées:', dataToSend);
       
       const response = await fetch('http://localhost:8000/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(dataToSend),
-        signal: controller.signal,
-        mode: 'cors' // Ajout pour CORS
+        body: JSON.stringify(dataToSend)
       });
 
-      clearTimeout(timeoutId);
-      console.log('Status de la réponse:', response.status);
-
-      let result;
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        result = await response.json();
-      } else {
-        const text = await response.text();
-        console.log('Réponse non-JSON:', text);
-        result = { message: text || 'Server error occurred' };
-      }
-
-      console.log('Résultat reçu:', result);
+      const result = await response.json();
 
       if (response.ok) {
         setMessage('Registration successful! Redirecting to login...');
@@ -147,122 +121,85 @@ const Register = () => {
           confirmPassword: '',
           isDriver: false
         });
-        setErrors({});
         
-        // Redirect to login page after 2 seconds
+        // Redirect to login after success
         setTimeout(() => {
-          navigate('/login');
+          window.location.href = '/login';
         }, 2000);
-        
       } else {
-        // Gestion améliorée des erreurs
-        let errorMessage = 'Registration failed. Please try again.';
-        
-        if (response.status === 400) {
-          // Gestion des erreurs de validation
-          if (result.errors && Array.isArray(result.errors)) {
-            errorMessage = result.errors.map(err => err.msg || err.message).join(', ');
-          } else if (result.error && Array.isArray(result.error)) {
-            errorMessage = result.error.map(err => err.msg || err.message).join(', ');
-          } else {
-            errorMessage = result.message || result.error || 'Invalid input data';
-          }
-        } else if (response.status === 404) {
-          // Votre backend retourne 404 pour "user exists"
-          errorMessage = result.message || 'User already exists!';
-        } else if (response.status === 409) {
-          errorMessage = result.message || 'User already exists';
-        } else if (response.status === 500) {
-          errorMessage = result.message || 'Server error. Please try again later';
-        } else {
-          errorMessage = result.message || result.error || `Error ${response.status}: Registration failed`;
-        }
-        
-        setMessage(errorMessage);
+        setMessage(result.message || result.error || 'Registration failed. Please try again.');
       }
 
     } catch (error) {
-      clearTimeout(timeoutId);
       console.error('Registration error:', error);
-      
-      if (error.name === 'AbortError') {
-        setMessage('Request timeout. Server is taking too long to respond.');
-      } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-        setMessage('Connection failed. Please check: 1) Server is running on port 8000, 2) No firewall blocking, 3) Correct URL');
-      } else if (error.name === 'SyntaxError') {
-        setMessage('Server returned invalid response. Please check server logs.');
-      } else if (error.message.includes('NetworkError')) {
-        setMessage('Network error. Check your internet connection.');
-      } else {
-        setMessage(`Error: ${error.message}. Please try again.`);
-      }
+      setMessage('Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-white/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-        <div className="absolute top-10 right-10 w-72 h-72 bg-yellow-300/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-75"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-150"></div>
-      </div>
-
+    <div className="min-h-screen bg-gray-50">
       {/* Main content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <div className="flex items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">TransportConnect</h1>
-            <p className="text-white/80 text-lg">Create your account</p>
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4 shadow-md">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Create Account
+              </span>
+            </h1>
+            <p className="text-gray-600">Join our logistics platform</p>
           </div>
 
-          {/* Register container with backdrop blur */}
-          <div className="backdrop-blur-md bg-white/20 rounded-2xl p-8 shadow-2xl border border-white/30">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* First Name */}
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Enter your first name"
-                  required
-                />
-                {errors.firstName && (
-                  <p className="text-red-300 text-sm mt-1">{errors.firstName}</p>
-                )}
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Enter your last name"
-                  required
-                />
-                {errors.lastName && (
-                  <p className="text-red-300 text-sm mt-1">{errors.lastName}</p>
-                )}
+          {/* Form Container */}
+          <div className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
+            <form className="space-y-6">
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    placeholder="John"
+                  />
+                  {errors.firstName && (
+                    <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    placeholder="Doe"
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+                  )}
+                </div>
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
+                <label className="block text-gray-700 text-sm font-medium mb-2">
                   Email Address
                 </label>
                 <input
@@ -270,18 +207,17 @@ const Register = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Enter your email"
-                  required
+                  className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  placeholder="john.doe@example.com"
                 />
                 {errors.email && (
-                  <p className="text-red-300 text-sm mt-1">{errors.email}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                 )}
               </div>
 
               {/* Phone Number */}
               <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
+                <label className="block text-gray-700 text-sm font-medium mb-2">
                   Phone Number
                 </label>
                 <input
@@ -289,54 +225,49 @@ const Register = () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Enter 10-digit phone number"
+                  className={`w-full px-4 py-3 rounded-lg border ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                  placeholder="1234567890"
                   maxLength="10"
-                  pattern="[0-9]{10}"
-                  required
                 />
                 {errors.phoneNumber && (
-                  <p className="text-red-300 text-sm mt-1">{errors.phoneNumber}</p>
+                  <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>
                 )}
               </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Enter your password"
-                  minLength="6"
-                  required
-                />
-                {errors.password && (
-                  <p className="text-red-300 text-sm mt-1">{errors.password}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-white/90 text-sm font-medium mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition duration-200"
-                  placeholder="Confirm your password"
-                  required
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-300 text-sm mt-1">{errors.confirmPassword}</p>
-                )}
+              {/* Password Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    placeholder="••••••••"
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                    placeholder="••••••••"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                  )}
+                </div>
               </div>
 
               {/* Driver Checkbox */}
@@ -346,48 +277,54 @@ const Register = () => {
                   name="isDriver"
                   checked={formData.isDriver}
                   onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 bg-white/20 border-white/30 rounded focus:ring-blue-500 focus:ring-2"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label className="ml-2 text-white/90 text-sm">
+                <label className="ml-2 text-gray-700 text-sm font-medium">
                   Register as a driver
                 </label>
               </div>
 
               {/* Submit Button */}
               <button
-                type="submit"
+                onClick={handleSubmit}
                 disabled={loading}
-                className="w-full bg-white/20 hover:bg-white/30 disabled:bg-white/10 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 backdrop-blur-sm border border-white/30 hover:border-white/50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     Creating Account...
                   </div>
                 ) : (
                   'Create Account'
                 )}
               </button>
+
+              {/* Message Display */}
+              {message && (
+                <div className={`p-3 rounded-lg text-center text-sm ${
+                  message.includes('successful') 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {message}
+                </div>
+              )}
             </form>
 
-            {/* Message */}
-            {message && (
-              <div className={`mt-5 p-3 rounded-lg text-center text-sm ${
-                message.includes('successful') 
-                  ? 'bg-green-500/20 text-green-100 border border-green-500/30' 
-                  : 'bg-red-500/20 text-red-100 border border-red-500/30'
-              }`}>
-                {message}
-              </div>
-            )}
-
-            {/* Login link */}
+            {/* Login Link */}
             <div className="mt-6 text-center">
-              <p className="text-white/80 text-sm">
+              <p className="text-gray-600 text-sm">
                 Already have an account?{' '}
-                <Link to="/login" className="text-white font-semibold hover:underline">
+                <a 
+                  href="/login" 
+                  className="text-blue-600 hover:text-blue-500 font-medium"
+                >
                   Sign in
-                </Link>
+                </a>
               </p>
             </div>
           </div>

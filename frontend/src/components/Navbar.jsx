@@ -1,116 +1,225 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Menu, X, ArrowRight } from 'lucide-react';
 
 const Navbar = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(null);
+  
+  useEffect(() => {
+    // Check authentication status on component mount
+    const checkAuth = () => {
+      const authToken = localStorage.getItem('authToken');
+      const loginStatus = localStorage.getItem('isLoggedIn') === 'true';
+      setToken(authToken);
+      setIsLoggedIn(loginStatus && authToken);
+    };
+    
+    checkAuth();
+    
+    // Listen for storage changes (for logout from other tabs)
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+  
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('isLoggedIn');
+    setToken(null);
+    setIsLoggedIn(false);
+    window.location.href = '/';
+  };
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    return (
-        <nav className={`fixed top-4 left-4 right-4 z-40 transition-all duration-500 rounded-2xl ${isScrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-xl border border-gray-200/50'
-            : 'bg-white/80 backdrop-blur-md border border-gray-200/30'
-            }`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <div className="flex items-center group">
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
-                            <div className="relative w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
-                                <Truck className="h-5 w-5 text-white" />
-                            </div>
-                        </div>
-                        <span className="ml-3 text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent group-hover:from-blue-600 group-hover:to-indigo-600 transition-all duration-300">
-                            TransportConnect
-                        </span>
-                    </div>
-
-                    <div className="hidden md:flex items-center space-x-1">
-                        <a href="about" className="group relative px-4 py-2 rounded-xl text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 hover:bg-gray-50">
-                            <span className="relative z-10">À propos</span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </a>
-
-                        <a href="login" className="group relative px-4 py-2 rounded-xl text-gray-700 hover:text-blue-600 font-medium transition-all duration-300 hover:bg-gray-50 ml-4">
-                            <span className="relative z-10">Se connecter</span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </a>
-
-                        <a href="register" className="group relative px-6 py-2 ml-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <span className="relative z-10 flex items-center">
-                                S'inscrire
-                                <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-300" />
-                            </span>
-                        </a>
-                    </div>
-
-                    <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="md:hidden relative p-2 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 group"
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10">
-                            {isMenuOpen ? (
-                                <X className="h-6 w-6 transform rotate-90" />
-                            ) : (
-                                <Menu className="h-6 w-6" />
-                            )}
-                        </div>
-                    </button>
-                </div>
+  return (
+    <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <div className="flex items-center">
+            <a 
+              href={isLoggedIn && token ? "/home" : "/"} 
+              className="flex items-center text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors duration-300"
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mr-3 shadow-md">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+              </div>
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Transport<span className="text-indigo-700">Connect</span>
+              </span>
+            </a>
+          </div>
+          
+          {/* Navigation Links */}
+          {isLoggedIn && token ? (
+            // Authenticated Navigation
+            <div className="hidden md:flex items-center space-x-4">
+              <a 
+                href="/home" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                  </svg>
+                  Dashboard
+                </span>
+              </a>
+              <a 
+                href="/rides" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  </svg>
+                  Rides
+                </span>
+              </a>
+              <a 
+                href="/profil" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  Profile
+                </span>
+              </a>
+              <button
+                onClick={handleLogout}
+                className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-5 py-2 rounded-lg transition-colors duration-300 font-medium shadow-md hover:shadow-lg hover:from-red-500 hover:to-pink-500"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
+                  Logout
+                </span>
+              </button>
             </div>
-
-            {/* Mobile Menu with creative animations */}
-            <div className={`md:hidden transition-all duration-500 ease-out ${isMenuOpen
-                ? 'max-h-96 opacity-100'
-                : 'max-h-0 opacity-0 pointer-events-none'
-                }`}>
-                <div className="px-4 py-4 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 rounded-b-2xl">
-                    <div className="space-y-2">
-                        <a
-                            href="#about"
-                            className={`block px-4 py-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 font-medium transition-all duration-300 transform ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-                                }`}
-                            style={{ transitionDelay: '100ms' }}
-                        >
-                            À propos
-                        </a>
-
-                        <a
-                            href="login"
-                            className={`block px-4 py-3 rounded-xl text-gray-700 hover:text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 font-medium transition-all duration-300 transform ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-                                }`}
-                            style={{ transitionDelay: '200ms' }}
-                        >
-                            Se connecter
-                        </a>
-
-                        <a
-                            href="register"
-                            className={`block px-4 py-3 mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 text-center group ${isMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-                                }`}
-                            style={{ transitionDelay: '300ms' }}
-                        >
-                            <div className="flex items-center justify-center">
-                                S'inscrire
-                                <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform duration-300" />
-                            </div>
-                        </a>
-                    </div>
-                </div>
+          ) : (
+            // Public Navigation
+            <div className="hidden md:flex items-center space-x-4">
+              <a 
+                href="/" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                  </svg>
+                  Home
+                </span>
+              </a>
+              <a 
+                href="#features" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  Features
+                </span>
+              </a>
+              <a 
+                href="#about" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  About
+                </span>
+              </a>
+              <a 
+                href="/login" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                  </svg>
+                  Sign In
+                </span>
+              </a>
+              <a 
+                href="/register" 
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2 rounded-lg transition-colors duration-300 font-medium shadow-md hover:shadow-lg hover:from-blue-500 hover:to-indigo-500"
+              >
+                <span className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                  Get Started
+                </span>
+              </a>
             </div>
+          )}
 
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent rounded-b-2xl"></div>
-        </nav>
-    );
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button className="text-gray-600 hover:text-blue-600 p-3 rounded-lg hover:bg-blue-50 transition-colors duration-300">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {(isLoggedIn && token) && (
+        <div className="md:hidden fixed bottom-6 left-4 right-4 z-50">
+          <div className="bg-white rounded-xl p-4 shadow-xl border border-gray-200">
+            <div className="flex justify-around">
+              <a 
+                href="/home" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
+              >
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <div className="text-xs font-medium">Dashboard</div>
+              </a>
+              <a 
+                href="/rides" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
+              >
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+                <div className="text-xs font-medium">Rides</div>
+              </a>
+              <a 
+                href="/profile" 
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
+              >
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <div className="text-xs font-medium">Profile</div>
+              </a>
+              <button
+                onClick={handleLogout}
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
+              >
+                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <div className="text-xs font-medium">Logout</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
 };
 
 export default Navbar;

@@ -4,15 +4,15 @@ const Demand = require("../models/Demand")
 //get for all
 const getAnnouncements = async (req, res) => {
     try {
-        const announcements = await Annoncement.find()
+        const announcements = await Annoncement.find().populate("driver", "firstName lastName email")
         
         if (announcements.length === 0 ) {
-            return res.staus(404).json({ error: "No announcements to display"})
+            return res.status(404).json({ error: "No announcements to display"})
         }
 
-        res.status(201).json(announcements)
+        res.status(200).json(announcements)
     } catch (error) {
-        res.status().json({ error: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
@@ -22,25 +22,25 @@ const getDriverAnnouncements = async (req, res) => {
         const announcements = await Annoncement.find({ driver: req.user._id }).sort({ createdAt: -1 })
         
         if (announcements.length === 0 ) {
-            return res.staus(404).json({ error: "No announcements to display"})
+            return res.status(404).json({ error: "No announcements to display"})
         }
 
-        res.status(201).json(announcements)
+        res.status(200).json(announcements)
     } catch (error) {
-        res.status().json({ error: error.message })
+        res.status(500).json({ error: error.message })
     }
 }
 
 //get one for all
 const getAnnouncement = async (req, res) => {
     try {
-        const announcement = await Annoncement.findById(req.params.id).populate("driver")
+        const announcement = await Annoncement.findById(req.params.id).populate("driver", "firstName lastName email phoneNumber")
         
         if (!announcement) {
             return res.status(404).json({ error: "Announcement not found"})
         }
         
-        res.status(201).json(announcement)
+        res.status(200).json(announcement)
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -59,38 +59,59 @@ const createAnnoncement = async (req, res) => {
       startDate,
     } = req.body;
 
+    // Validate required fields
+    if (!startPoint || !destination || !availableCapacity || !startDate) {
+        return res.status(400).json({ 
+            error: "Missing required fields: startPoint, destination, availableCapacity, and startDate are required" 
+        });
+    }
+
+    // Validate start date is in the future
+    if (new Date(startDate) <= new Date()) {
+        return res.status(400).json({ 
+            error: "Start date must be in the future" 
+        });
+    }
+
     const announcement = new Annoncement({
-      driver: req.user.id,
+      driver: req.user._id,
       startPoint,
-      wayPoints,
+      waypoints: wayPoints, // Note: model uses 'waypoints' not 'wayPoints'
       destination,
       maxDimensions,
-      packagesTypes, 
+      packageTypes: packagesTypes, // Note: model uses 'packageTypes' not 'packagesTypes'
       availableCapacity,
       startDate
     });
 
     await announcement.save()
 
-    res.status(201).json({ message: "Announcement created successfully!"})
+    res.status(201).json({ message: "Announcement created successfully!", announcement })
   } catch (error) {
+    console.error('Error creating announcement:', error);
     res.status(400).json({ error: error.message })
   }
 };
 
 const updateAnnouncement = async (req, res) => {
     try {
+        // Check if the announcement belongs to the current driver
+        const existingAnnouncement = await Annoncement.findOne({
+            _id: req.params.id,
+            driver: req.user._id
+        });
+
+        if (!existingAnnouncement) {
+            return res.status(404).json({ error: "Announcement not found or you don't have permission to update it"});
+        }
+
         const updatedAnnouncement = await Annoncement.findByIdAndUpdate(
             req.params.id,
             { $set: req.body },
             { new: true, runValidators: true}
-        ).populate("driver")
+        ).populate("driver", "firstName lastName email")
 
-        if (!updatedAnnouncement) {
-            return res.status(404).json({ error: "Announce not found"})
-        }
-
-        res.status(201).json(updatedAnnouncement)
+        res.status(200).json(updatedAnnouncement)
 
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -99,19 +120,23 @@ const updateAnnouncement = async (req, res) => {
 
 const deleteAnnouncement = async (req, res) => {
     try {
-        const announcement = await Annoncement.findById({ _id: req.params.id, driver: req.user._id })
+        const announcement = await Annoncement.findOne({ 
+            _id: req.params.id, 
+            driver: req.user._id 
+        })
 
         if (!announcement) {
-            return res.status(404).json({ error: "Announcement not found" })
+            return res.status(404).json({ error: "Announcement not found or you don't have permission to delete it" })
         }
 
+        // Update any pending demands to cancelled status
         await Demand.updateMany(
             { announcement: announcement._id, status: "pending" },
             { status: "cancelled" }
         )
 
         await Annoncement.findByIdAndDelete(req.params.id)
-        res.status(201).json({ message: "Announcement deleted successfully"})
+        res.status(200).json({ message: "Announcement deleted successfully"})
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -128,15 +153,10 @@ const getDriverHistory = async (req, res) => {
             strictPopulate: false
         }).sort({ endDate: -1})
 
-        res.status(201).json(history)
+        res.status(200).json(history)
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
 }
 
 module.exports = { getAnnouncement, getAnnouncements, getDriverAnnouncements, createAnnoncement, updateAnnouncement, deleteAnnouncement, getDriverHistory }
-
-
-
-
-

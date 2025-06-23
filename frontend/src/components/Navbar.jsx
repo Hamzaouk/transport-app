@@ -68,14 +68,14 @@ const Navbar = () => {
                 </span>
               </a>
               <a 
-                href="/rides" 
+                href="/announcements" 
                 className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
               >
                 <span className="flex items-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                   </svg>
-                  Rides
+                  Announces
                 </span>
               </a>
               <a 
@@ -116,14 +116,14 @@ const Navbar = () => {
                 </span>
               </a>
               <a 
-                href="#features" 
+                href="/announcements" 
                 className="text-gray-600 hover:text-blue-600 transition-colors duration-300 font-medium px-4 py-2 rounded-lg hover:bg-blue-50"
               >
                 <span className="flex items-center">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                   </svg>
-                  Features
+                  Announces
                 </span>
               </a>
               <a 
@@ -188,16 +188,16 @@ const Navbar = () => {
                 <div className="text-xs font-medium">Dashboard</div>
               </a>
               <a 
-                href="/rides" 
+                href="/announcements" 
                 className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
               >
                 <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
                 </svg>
-                <div className="text-xs font-medium">Rides</div>
+                <div className="text-xs font-medium">Announces</div>
               </a>
               <a 
-                href="/profile" 
+                href="/profil" 
                 className="text-gray-600 hover:text-blue-600 transition-colors duration-300 text-center flex flex-col items-center p-2 rounded-lg hover:bg-blue-50"
               >
                 <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

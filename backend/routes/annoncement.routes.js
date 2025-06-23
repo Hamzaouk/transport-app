@@ -37,6 +37,5 @@ router.get("/getdriverannouncement", authMiddleware, driverMiddleware, announcem
 router.post("/create", authMiddleware, driverMiddleware, announcementController.createAnnoncement)
 router.put("/update/:id", authMiddleware, driverMiddleware, announcementController.updateAnnouncement)
 router.delete("/delete/:id", authMiddleware, driverMiddleware, announcementController.deleteAnnouncement)
-router.get("/history", authMiddleware, driverMiddleware, announcementController.getDriverHistory)
 
 module.exports = router

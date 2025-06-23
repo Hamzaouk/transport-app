@@ -142,21 +142,6 @@ const deleteAnnouncement = async (req, res) => {
     }
 }
 
-const getDriverHistory = async (req, res) => {
-    try {
-        const history = await Annoncement.find({ 
-            driver: req.user._id, 
-            status: "completed"
-        }).populate({ 
-            path: "demands", 
-            match: { status: "delivered"},
-            strictPopulate: false
-        }).sort({ endDate: -1})
 
-        res.status(200).json(history)
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-}
 
-module.exports = { getAnnouncement, getAnnouncements, getDriverAnnouncements, createAnnoncement, updateAnnouncement, deleteAnnouncement, getDriverHistory }
+module.exports = { getAnnouncement, getAnnouncements, getDriverAnnouncements, createAnnoncement, updateAnnouncement, deleteAnnouncement }
